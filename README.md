@@ -50,7 +50,7 @@ If all goes well, your new slideshow should be showing up on screen with the set
 
 ## Current Issues
 - Images don't playback properly on a **Pi 0**. Once you add too many images to the slideshow, playback gets weird.
-- JPEG Exif metadata orientation doesn't work, so some images wont be rotated correctly when being displayed
+- JPEG Exif metadata orientation isn't respected, so some images wont be rotated correctly when being displayed
 
 ## Good to know
 - Most of the operating system is setup as read-only (exception is a few configs and the cached resized images)
