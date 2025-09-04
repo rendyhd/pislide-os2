@@ -40,6 +40,10 @@ jobs:
         with:
           submodules: recursive
 
+      # needed for 32bit OS's
+      - name: Install multi-lib gcc/g++
+        run: sudo apt-get install gcc-multilib  g++-multilib
+
       - name: Cache Buildroot compile cache + dls
         uses: actions/cache@v4
         with:
