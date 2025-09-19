@@ -1,6 +1,5 @@
 config BR2_PACKAGE_LUA_LPATH
 	bool "lua-lpath"
-	select BR2_PACKAGE_LUA_LPATH
 	help
 	  a OS specified path manipulation module for Lua
 
