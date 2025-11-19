@@ -40,9 +40,10 @@ if ! mountpoint -q ${PHOTOS_MNT}; then
 
 
     # clear cache if it exists
-    if [ -d "${PHOTOS_MNT}/_cache" ]; then
-        rm -rf ${PHOTOS_MNT}/_cache
-    fi
+    # clear cache if it exists
+    # if [ -d "${PHOTOS_MNT}/_cache" ]; then
+    #     rm -rf ${PHOTOS_MNT}/_cache
+    # fi
 fi
 
 if [ "$first_boot" = true ] ; then
