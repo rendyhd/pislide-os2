@@ -1,7 +1,7 @@
-diff --git a/build/rayimg/main.lua b/build/rayimg/main.lua
+diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
 index 678b39b..9c6ac8f 100644
---- a/build/rayimg/main.lua
-+++ b/build/rayimg/main.lua
+--- a/rayimg/build/rayimg/main.lua
++++ b/rayimg/build/rayimg/main.lua
 @@ -62,9 +62,9 @@ local loaded_texture = image_handler:get_current_image()
  local next_texture
  
@@ -52,10 +52,10 @@ index 678b39b..9c6ac8f 100644
           reset_timers()
        end
     elseif transitioning then
-diff --git a/src/rayimg/main.tl b/src/rayimg/main.tl
+diff --git a/rayimg/src/rayimg/main.tl b/rayimg/src/rayimg/main.tl
 index 6fb65c3..8464458 100644
---- a/src/rayimg/main.tl
-+++ b/src/rayimg/main.tl
+--- a/rayimg/src/rayimg/main.tl
++++ b/rayimg/src/rayimg/main.tl
 @@ -62,9 +62,10 @@ local loaded_texture = image_handler:get_current_image()
  local next_texture: ImageLoader.LoadedTexture
  
