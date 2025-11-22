@@ -15,18 +15,7 @@ index 678b39b..9c6ac8f 100644
  
  local timer_duration = 0
  local transitioning = false
-@@ -106,6 +106,10 @@ while not rl.WindowShouldClose() do
-       image_handler:increase_index()
-       loaded_texture = image_handler:get_current_image()
-       reset_timers()
-+      if next_texture ~= nil then
-+         rl.UnloadTexture(next_texture.texture)
-+         next_texture = nil
-+      end
-    end
- 
-    if rl.IsKeyPressed(rl.KEY_LEFT) then
-@@ -113,6 +117,15 @@ while not rl.WindowShouldClose() do
+@@ -113,6 +113,17 @@ while not rl.WindowShouldClose() do
        image_handler:decrease_index()
        loaded_texture = image_handler:get_current_image()
        reset_timers()
@@ -34,17 +23,17 @@ index 678b39b..9c6ac8f 100644
 +         rl.UnloadTexture(next_texture.texture)
 +         next_texture = nil
 +      end
-+   end
-+
+    end
+ 
 +   if next_texture == nil and args.transition_duration > 0 then
 +      drawSingleImage()
 +      rl.WaitTime(0.05)
 +      collectgarbage()
 +      next_texture = image_handler:peek_next_image()
-    end
- 
++   end
++
     if args.duration > 0 then
-@@ -142,7 +155,8 @@ while not rl.WindowShouldClose() do
+@@ -142,7 +153,8 @@ while not rl.WindowShouldClose() do
           image_handler:increase_index()
           loaded_texture = next_texture
  
@@ -72,18 +61,7 @@ index 6fb65c3..8464458 100644
  
  local timer_duration: number = 0
  local transitioning = false
-@@ -106,6 +107,10 @@ while not rl.WindowShouldClose() do
-         image_handler:increase_index()
-         loaded_texture = image_handler:get_current_image()
-         reset_timers()
-+        if next_texture ~= nil then
-+            rl.UnloadTexture(next_texture.texture)
-+            next_texture = nil
-+        end
-     end
- 
-     if rl.IsKeyPressed(rl.KEY_LEFT) then
-@@ -113,6 +118,15 @@ while not rl.WindowShouldClose() do
+@@ -113,6 +114,17 @@ while not rl.WindowShouldClose() do
          image_handler:decrease_index()
          loaded_texture = image_handler:get_current_image()
          reset_timers()
@@ -91,17 +69,17 @@ index 6fb65c3..8464458 100644
 +            rl.UnloadTexture(next_texture.texture)
 +            next_texture = nil
 +        end
-+    end
-+
+     end
+ 
 +    if next_texture == nil and args.transition_duration > 0 then
 +        drawSingleImage()
 +        rl.WaitTime(0.05)
 +        collectgarbage()
 +        next_texture = image_handler:peek_next_image()
-     end
- 
++    end
++
      if args.duration > 0 then
-@@ -142,7 +156,8 @@ while not rl.WindowShouldClose() do
+@@ -142,7 +154,8 @@ while not rl.WindowShouldClose() do
              image_handler:increase_index()
              loaded_texture = next_texture
              
