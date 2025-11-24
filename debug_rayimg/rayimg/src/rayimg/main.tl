@@ -61,12 +61,6 @@ local fontPosition = rl.NewVector2(20, screen_height-fontSize-10)
 local loaded_texture = image_handler:get_current_image()
 local next_texture: ImageLoader.LoadedTexture
 
--- will need both images loaded to do a smooth transition
--- will need both images loaded to do a smooth transition
--- if args.transition_duration > 0 then
---     next_texture = image_handler:peek_next_image()
--- end
-
 local timer_duration: number = 0
 local transitioning = false
 local transition_time: number = 0
@@ -77,6 +71,29 @@ local function reset_timers()
     transitioning = false
     transition_time = 0
 end
+
+-- Helper function to pre-load next image with proper cleanup
+local function preload_next_image()
+    if args.transition_duration > 0 then
+        -- Clean up old next_texture if it exists
+        if next_texture ~= nil then
+            rl.UnloadTexture(next_texture.texture)
+        end
+        collectgarbage()
+
+        -- Load next image (this may take time, but we do it early)
+        local success, result = pcall(image_handler.peek_next_image, image_handler)
+        if success then
+            next_texture = result
+        else
+            print("WARNING: Failed to pre-load next image: " .. tostring(result))
+            next_texture = nil
+        end
+    end
+end
+
+-- Pre-load the first next_texture at startup (during initial display time)
+preload_next_image()
 
 local function drawText()
     if args.display == "none" then
@@ -107,6 +124,8 @@ while not rl.WindowShouldClose() do
         image_handler:increase_index()
         loaded_texture = image_handler:get_current_image()
         reset_timers()
+        -- Pre-load next image immediately to use full display time for loading
+        preload_next_image()
     end
 
     if rl.IsKeyPressed(rl.KEY_LEFT) then
@@ -114,23 +133,21 @@ while not rl.WindowShouldClose() do
         image_handler:decrease_index()
         loaded_texture = image_handler:get_current_image()
         reset_timers()
-        if next_texture ~= nil then
-            rl.UnloadTexture(next_texture.texture)
-            next_texture = nil
-        end
-    end
-
-    if next_texture == nil and args.transition_duration > 0 then
-        drawSingleImage()
-        rl.WaitTime(0.05)
-        collectgarbage()
-        next_texture = image_handler:peek_next_image()
+        -- Pre-load next image immediately (preload_next_image handles cleanup)
+        preload_next_image()
     end
 
     if args.duration > 0 then
         if timer_duration >= args.duration then
-            transitioning = true
-            rl.SetTargetFPS(20)
+            -- Only transition if next image is ready (graceful fallback)
+            if args.transition_duration == 0 or next_texture ~= nil then
+                transitioning = true
+                rl.SetTargetFPS(20)
+            else
+                -- Next image not ready yet, extend display time
+                -- This prevents black screen - better to show current image longer
+                print("INFO: Next image not loaded yet, extending display time...")
+            end
         end
         timer_duration = timer_duration + rl.GetFrameTime()
     end
@@ -154,16 +171,20 @@ while not rl.WindowShouldClose() do
             image_handler:increase_index()
             loaded_texture = next_texture
 
-            -- next_texture = image_handler:peek_next_image()
-            next_texture = nil
             reset_timers()
+
+            -- Pre-load next image immediately to use full display time for loading
+            preload_next_image()
         end
     elseif transitioning then
+        -- No transition effect, just switch immediately
         rl.UnloadTexture(loaded_texture.texture)
         image_handler:increase_index()
         loaded_texture = image_handler:get_current_image()
         reset_timers()
         drawSingleImage()
+        -- Pre-load next image for next cycle
+        preload_next_image()
     elseif loaded_texture.image.kind == "animation" then
         rl.SetTargetFPS(math.floor(1000/(loaded_texture.image as imageinterface.Animation).advance_frame()))
         rl.UpdateTexture(loaded_texture.texture, (loaded_texture.image as imageinterface.Animation).get_frame_pixels())
