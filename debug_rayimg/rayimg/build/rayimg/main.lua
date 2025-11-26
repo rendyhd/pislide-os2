@@ -170,6 +170,9 @@ while not rl.WindowShouldClose() do
 
          image_handler:increase_index()
          loaded_texture = next_texture
+         -- CRITICAL: Clear next_texture reference before preload_next_image()
+         -- to prevent unloading the texture we just assigned to loaded_texture
+         next_texture = nil
 
          reset_timers()
 
