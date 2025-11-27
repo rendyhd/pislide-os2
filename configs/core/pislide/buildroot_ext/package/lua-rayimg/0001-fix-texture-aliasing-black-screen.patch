@@ -34,10 +34,9 @@ Key changes:
  2 files changed, 86 insertions(+), 28 deletions(-)
 
 diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
-index 1111111..2222222 100644
 --- a/rayimg/build/rayimg/main.lua
 +++ b/rayimg/build/rayimg/main.lua
-@@ -61,11 +61,6 @@ end
+@@ -61,11 +61,6 @@
  local loaded_texture = image_handler:get_current_image()
  local next_texture
 
@@ -49,7 +48,7 @@ index 1111111..2222222 100644
  local timer_duration = 0
  local transitioning = false
  local transition_time = 0
-@@ -77,6 +72,29 @@ local function reset_timers()
+@@ -77,6 +72,29 @@
     transition_time = 0
  end
 
@@ -79,7 +78,7 @@ index 1111111..2222222 100644
  local function drawText()
     if args.display == "none" then
        return
-@@ -106,6 +124,8 @@ while not rl.WindowShouldClose() do
+@@ -106,6 +124,8 @@
        image_handler:increase_index()
        loaded_texture = image_handler:get_current_image()
        reset_timers()
@@ -88,7 +87,7 @@ index 1111111..2222222 100644
     end
 
     if rl.IsKeyPressed(rl.KEY_LEFT) then
-@@ -113,12 +133,21 @@ while not rl.WindowShouldClose() do
+@@ -113,12 +133,21 @@
        image_handler:decrease_index()
        loaded_texture = image_handler:get_current_image()
        reset_timers()
@@ -112,7 +111,7 @@ index 1111111..2222222 100644
        end
        timer_duration = timer_duration + rl.GetFrameTime()
     end
-@@ -141,16 +170,24 @@ while not rl.WindowShouldClose() do
+@@ -141,16 +170,24 @@
 
           image_handler:increase_index()
           loaded_texture = next_texture
@@ -139,10 +138,9 @@ index 1111111..2222222 100644
        rl.SetTargetFPS(math.floor(1000 / (loaded_texture.image).advance_frame()))
        rl.UpdateTexture(loaded_texture.texture, (loaded_texture.image).get_frame_pixels())
 diff --git a/rayimg/src/rayimg/main.tl b/rayimg/src/rayimg/main.tl
-index 3333333..4444444 100644
 --- a/rayimg/src/rayimg/main.tl
 +++ b/rayimg/src/rayimg/main.tl
-@@ -61,11 +61,6 @@ end
+@@ -61,11 +61,6 @@
  local loaded_texture = image_handler:get_current_image()
  local next_texture: ImageLoader.LoadedTexture
 
@@ -154,7 +152,7 @@ index 3333333..4444444 100644
  local timer_duration: number = 0
  local transitioning = false
  local transition_time: number = 0
-@@ -77,6 +72,29 @@ local function reset_timers()
+@@ -77,6 +72,29 @@
      transition_time = 0
  end
 
@@ -184,7 +182,7 @@ index 3333333..4444444 100644
  local function drawText()
      if args.display == "none" then
          return
-@@ -106,6 +124,8 @@ while not rl.WindowShouldClose() do
+@@ -106,6 +124,8 @@
          image_handler:increase_index()
          loaded_texture = image_handler:get_current_image()
          reset_timers()
@@ -193,7 +191,7 @@ index 3333333..4444444 100644
      end
 
      if rl.IsKeyPressed(rl.KEY_LEFT) then
-@@ -113,12 +133,21 @@ while not rl.WindowShouldClose() do
+@@ -113,12 +133,21 @@
          image_handler:decrease_index()
          loaded_texture = image_handler:get_current_image()
          reset_timers()
@@ -217,7 +215,7 @@ index 3333333..4444444 100644
          end
          timer_duration = timer_duration + rl.GetFrameTime()
      end
-@@ -141,16 +170,24 @@ while not rl.WindowShouldClose() do
+@@ -141,16 +170,24 @@
              -- since the next image is already loaded, we just need to increase the index and move on
              image_handler:increase_index()
              loaded_texture = next_texture
