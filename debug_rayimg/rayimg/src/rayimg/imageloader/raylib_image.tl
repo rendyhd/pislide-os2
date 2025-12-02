@@ -13,13 +13,13 @@ end
 
 function RaylibImageLoader.load_image_and_downsize(file: string, screen_width: integer, screen_height: integer): imageinterface.LoadedImage
     local image = rl.LoadImage(file)
-    local should_cache = false
+    -- Always cache to prevent slow reloads on subsequent cycles
+    local should_cache = true
     if image.width > screen_width or image.height > screen_height then
         local scale = math.min(screen_width/image.width, screen_height/image.height)
 		local newWidth = math.min(screen_width, scale*image.width)
 		local newHeight = math.min(screen_height, scale*image.height)
         rl.ImageResize(image, math.floor(newWidth), math.floor(newHeight))
-        should_cache = true
     end
 
     local mt = {__gc=function(self: RaylibImage) print("raylib gc called") rl.UnloadImage(self.image) end}

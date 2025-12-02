@@ -1,12 +1,10 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
-Date: Wed, 27 Nov 2025 00:00:00 +0000
-Subject: [PATCH] fix: Implement early pre-loading strategy and prevent black
- screen bug
+Date: Mon, 02 Dec 2025 00:00:00 +0000
+Subject: [PATCH] fix: Prevent black screen between slideshow cycles
 
-This patch implements an early image pre-loading strategy to improve
-slideshow performance with large images, and fixes a critical black
-screen bug that occurs during image transitions.
+This patch fixes a critical black screen bug that occurs between slideshow
+cycles, and improves caching to prevent slow reloads.
 
 Key changes:
 
@@ -22,16 +20,58 @@ Key changes:
 
 4. CRITICAL FIX: Set next_texture = nil after assigning to loaded_texture
    to prevent the cleanup in preload_next_image() from unloading the
-   texture that loaded_texture is still displaying (black screen bug)
+   texture that loaded_texture is still displaying
 
-5. Preloading after manual navigation (left/right keys)
+5. CRITICAL FIX: Call drawSingleImage() BEFORE preload_next_image() to
+   ensure the current image is displayed during the blocking load,
+   preventing blank/blue screen on DRM/KMS displays
 
-6. Preloading after non-crossfade transitions
+6. CACHING FIX: Always cache images regardless of size to prevent slow
+   reloads on subsequent cycles
 
 ---
- rayimg/build/rayimg/main.lua | 57 +++++++++++++++++++++++++++---------
- 1 file changed, 43 insertions(+), 14 deletions(-)
+ rayimg/build/rayimg/imageloader/raylib_image.lua |  5 +--
+ rayimg/build/rayimg/imageloader/vips_image.lua   |  5 +--
+ rayimg/build/rayimg/main.lua                     | 68 +++++++++++++++++-------
+ 3 files changed, 55 insertions(+), 23 deletions(-)
 
+diff --git a/rayimg/build/rayimg/imageloader/raylib_image.lua b/rayimg/build/rayimg/imageloader/raylib_image.lua
+--- a/rayimg/build/rayimg/imageloader/raylib_image.lua
++++ b/rayimg/build/rayimg/imageloader/raylib_image.lua
+@@ -13,13 +13,13 @@
+
+ function RaylibImageLoader.load_image_and_downsize(file, screen_width, screen_height)
+    local image = rl.LoadImage(file)
+-   local should_cache = false
++   -- Always cache to prevent slow reloads on subsequent cycles
++   local should_cache = true
+    if image.width > screen_width or image.height > screen_height then
+       local scale = math.min(screen_width / image.width, screen_height / image.height)
+       local newWidth = math.min(screen_width, scale * image.width)
+       local newHeight = math.min(screen_height, scale * image.height)
+       rl.ImageResize(image, math.floor(newWidth), math.floor(newHeight))
+-      should_cache = true
+    end
+
+    local mt = { __gc = function(self) print("raylib gc called"); rl.UnloadImage(self.image) end }
+diff --git a/rayimg/build/rayimg/imageloader/vips_image.lua b/rayimg/build/rayimg/imageloader/vips_image.lua
+--- a/rayimg/build/rayimg/imageloader/vips_image.lua
++++ b/rayimg/build/rayimg/imageloader/vips_image.lua
+@@ -14,12 +14,12 @@
+ function VipsImageLoader.load_image_and_downsize(file, screen_width, screen_height)
+    local vips_image = vips.Image.new_from_file(file)
+
+-   local should_cache = false
++   -- Always cache to prevent slow reloads on subsequent cycles
++   local should_cache = true
+
+    if vips_image:width() > screen_width or vips_image:height() > screen_height then
+       local scale = math.min(screen_width / vips_image:width(), screen_height / vips_image:height())
+       vips_image = vips_image:resize(scale, { kernel = "lanczos3" })
+-      should_cache = true
+    end
+
+    if vips_image:interpretation() ~= "srgb" then
 diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
 --- a/rayimg/build/rayimg/main.lua
 +++ b/rayimg/build/rayimg/main.lua
@@ -77,19 +117,23 @@ diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
  local function drawText()
     if args.display == "none" then
        return
-@@ -106,6 +124,8 @@
+@@ -106,6 +124,10 @@
        image_handler:increase_index()
        loaded_texture = image_handler:get_current_image()
        reset_timers()
++      -- Draw current image BEFORE preloading to prevent blank screen during load
++      drawSingleImage()
 +      -- Pre-load next image immediately to use full display time for loading
 +      preload_next_image()
     end
 
     if rl.IsKeyPressed(rl.KEY_LEFT) then
-@@ -113,12 +133,21 @@
+@@ -113,12 +135,23 @@
        image_handler:decrease_index()
        loaded_texture = image_handler:get_current_image()
        reset_timers()
++      -- Draw current image BEFORE preloading to prevent blank screen during load
++      drawSingleImage()
 +      -- Pre-load next image immediately (preload_next_image handles cleanup)
 +      preload_next_image()
     end
@@ -110,7 +154,7 @@ diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
        end
        timer_duration = timer_duration + rl.GetFrameTime()
     end
-@@ -141,16 +170,24 @@
+@@ -141,16 +174,27 @@
 
           image_handler:increase_index()
           loaded_texture = next_texture
@@ -120,6 +164,9 @@ diff --git a/rayimg/build/rayimg/main.lua b/rayimg/build/rayimg/main.lua
 
 -         next_texture = image_handler:peek_next_image()
           reset_timers()
++
++         -- Draw current image BEFORE preloading to prevent blank screen during load
++         drawSingleImage()
 +
 +         -- Pre-load next image immediately to use full display time for loading
 +         preload_next_image()

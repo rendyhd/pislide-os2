@@ -124,6 +124,8 @@ while not rl.WindowShouldClose() do
       image_handler:increase_index()
       loaded_texture = image_handler:get_current_image()
       reset_timers()
+      -- Draw current image BEFORE preloading to prevent blank screen during load
+      drawSingleImage()
       -- Pre-load next image immediately to use full display time for loading
       preload_next_image()
    end
@@ -133,6 +135,8 @@ while not rl.WindowShouldClose() do
       image_handler:decrease_index()
       loaded_texture = image_handler:get_current_image()
       reset_timers()
+      -- Draw current image BEFORE preloading to prevent blank screen during load
+      drawSingleImage()
       -- Pre-load next image immediately (preload_next_image handles cleanup)
       preload_next_image()
    end
@@ -175,6 +179,9 @@ while not rl.WindowShouldClose() do
          next_texture = nil
 
          reset_timers()
+
+         -- Draw current image BEFORE preloading to prevent blank screen during load
+         drawSingleImage()
 
          -- Pre-load next image immediately to use full display time for loading
          preload_next_image()

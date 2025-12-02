@@ -14,12 +14,12 @@ local VipsImageLoader = {}
 function VipsImageLoader.load_image_and_downsize(file, screen_width, screen_height)
    local vips_image = vips.Image.new_from_file(file)
 
-   local should_cache = false
+   -- Always cache to prevent slow reloads on subsequent cycles
+   local should_cache = true
 
    if vips_image:width() > screen_width or vips_image:height() > screen_height then
       local scale = math.min(screen_width / vips_image:width(), screen_height / vips_image:height())
       vips_image = vips_image:resize(scale, { kernel = "lanczos3" })
-      should_cache = true
    end
 
    if vips_image:interpretation() ~= "srgb" then
